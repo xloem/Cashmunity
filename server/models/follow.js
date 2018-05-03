@@ -11,6 +11,7 @@ module.exports = function(sequelize, DataTypes) {
       follow: DataTypes.STRING,
       height: DataTypes.BIGINT,
       mtime: DataTypes.BIGINT,
+      unfollow: DataTypes.BOOLEAN,
     },
     {
       tableName: 'follows',

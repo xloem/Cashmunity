@@ -123,7 +123,7 @@ class Worker {
                     liketx,
                     tip,
                   });
-              } else if (script === '6a026d06') {
+              } else if (script === '6a026d06' || script === '6a026d07') {
                 const address = tx.inputs[0].address;
                 const mtime = tx.mtime;
                 const hash = tx.hash;
@@ -136,20 +136,7 @@ class Worker {
                     height,
                     mtime,
                     follow,
-                  });
-              } else if (script === '6a026d07') {
-                const address = tx.inputs[0].address;
-                const mtime = tx.mtime;
-                const hash = tx.hash;
-                const unfollow = base58check.encode(output.script.slice(10));
-                // console.log(`${height}: ${address} unfollowed: ${unfollow}`);
-                USE_DB &&
-                  DB.Unfollow.create({
-                    hash,
-                    address,
-                    height,
-                    mtime,
-                    unfollow,
+                    unfollow: script === '6a026d07',
                   });
               }
             } catch (err) {

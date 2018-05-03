@@ -37,7 +37,27 @@ app.get('/', (req, res) => {
 
 app.get('/messages/:address', async (req, res) => {
   LOG && console.log('/messages', req.params);
-  res.json(await memo.messages(req.params));
+  res.json(await memo.messages({ ...req.params, height: req.query.height }));
+});
+app.get('/replies/:replytx', async (req, res) => {
+  LOG && console.log('/replies', req.params);
+  res.json(await memo.replies({ ...req.params, height: req.query.height }));
+});
+app.get('/likes/:address', async (req, res) => {
+  LOG && console.log('/likes', req.params);
+  res.json(await memo.likes({ ...req.params, height: req.query.height }));
+});
+app.get('/name/:address', async (req, res) => {
+  LOG && console.log('/name', req.params);
+  res.json(await memo.name(req.params));
+});
+app.get('/follows/:address', async (req, res) => {
+  LOG && console.log('/follows', req.params);
+  res.json(await memo.follows(req.params));
+});
+app.get('/feed/:address', async (req, res) => {
+  LOG && console.log('/feed', req.params);
+  res.json(await memo.feed({ ...req.params, height: req.query.height }));
 });
 
 // app.post('/something', async (req, res) => {
