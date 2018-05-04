@@ -9,6 +9,7 @@ module.exports = function(sequelize, DataTypes) {
       },
       msg: DataTypes.STRING(512),
       address: DataTypes.STRING,
+      replytx: DataTypes.STRING,
       height: DataTypes.BIGINT,
       mtime: DataTypes.BIGINT,
     },

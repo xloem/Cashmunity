@@ -3,7 +3,7 @@ const Op = DB.Sequelize.Op;
 const Worker = require('./worker');
 const worker = new Worker();
 
-const DEFAULT_LIMIT = 100;
+const DEFAULT_LIMIT = 200;
 
 class Memo {
   constructor() {
@@ -19,7 +19,7 @@ class Memo {
         },
       },
       raw: true,
-      attributes: ['hash', 'msg', 'height'],
+      attributes: ['hash', 'msg', 'height', 'replytx'],
       limit: DEFAULT_LIMIT,
       order: [['height', 'DESC']],
     });
@@ -28,7 +28,7 @@ class Memo {
     };
   }
   async replies({ replytx, height }) {
-    const replies = await DB.Reply.findAll({
+    const replies = await DB.Message.findAll({
       where: {
         replytx,
         height: {
@@ -36,7 +36,7 @@ class Memo {
         },
       },
       raw: true,
-      attributes: ['hash', 'msg', 'height'],
+      attributes: ['hash', 'msg', 'address', 'height', 'replytx'],
       limit: DEFAULT_LIMIT,
       order: [['height', 'DESC']],
     });
@@ -99,6 +99,20 @@ class Memo {
       },
       raw: true,
       attributes: ['hash', 'msg', 'height'],
+      limit: DEFAULT_LIMIT,
+      order: [['height', 'DESC']],
+    });
+    return { messages };
+  }
+  async top({ height }) {
+    const messages = await DB.Message.findAll({
+      where: {
+        height: {
+          [Op.lt]: height || Number.MAX_SAFE_INTEGER,
+        },
+      },
+      raw: true,
+      attributes: ['hash', 'msg', 'address', 'height'],
       limit: DEFAULT_LIMIT,
       order: [['height', 'DESC']],
     });

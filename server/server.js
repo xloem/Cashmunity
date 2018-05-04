@@ -59,6 +59,10 @@ app.get('/feed/:address', async (req, res) => {
   LOG && console.log('/feed', req.params);
   res.json(await memo.feed({ ...req.params, height: req.query.height }));
 });
+app.get('/top', async (req, res) => {
+  LOG && console.log('/top', req.query);
+  res.json(await memo.top(req.query));
+});
 
 // app.post('/something', async (req, res) => {
 //   LOG && console.log('/something', req.body);
