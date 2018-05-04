@@ -30,5 +30,5 @@ module.exports = {
   Message,
   Settings,
   Sequelize,
-  sequelize: sequelize,
+  sequelize,
 };

@@ -1,14 +1,10 @@
 const DB = require('./db');
 const Op = DB.Sequelize.Op;
-const Worker = require('./worker');
-const worker = new Worker();
 
 const DEFAULT_LIMIT = 200;
 
 class Memo {
-  constructor() {
-    // worker.sync();
-  }
+  constructor() {}
 
   async messages({ address, height }) {
     const messages = await DB.Message.findAll({

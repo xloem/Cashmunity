@@ -8,6 +8,8 @@ const simplelogger = require('simple-node-logger');
 
 const Memo = require('./memo');
 const memo = new Memo();
+const Worker = require('./worker');
+const worker = new Worker();
 
 const LOG = false;
 const PORT = 8081;
@@ -31,10 +33,9 @@ app.use(compression());
 app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
-  // LOG && console.log('/', req.query);
+  LOG && console.log('/', req.query);
   res.send('Hello world!');
 });
-
 app.get('/messages/:address', async (req, res) => {
   LOG && console.log('/messages', req.params);
   res.json(await memo.messages({ ...req.params, height: req.query.height }));
@@ -63,10 +64,5 @@ app.get('/top', async (req, res) => {
   LOG && console.log('/top', req.query);
   res.json(await memo.top(req.query));
 });
-
-// app.post('/something', async (req, res) => {
-//   LOG && console.log('/something', req.body);
-//   res.json(await memo.something(req.body));
-// });
 
 app.listen(PORT, HOST, () => consoleLog.info(`Listening on port ${PORT}.`));

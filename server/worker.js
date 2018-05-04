@@ -5,7 +5,8 @@ const base58check = require('base58check');
 const { CONFIG } = require('../config');
 
 const USE_DB = true;
-const START_BLOCK = 525546;
+const START_BLOCK = 525471;
+const MAX_BLOCK_HEIGHT = 999999999999;
 
 function reverseHexString(str) {
   return str
@@ -28,15 +29,17 @@ class Worker {
       CONFIG.timeout || 3000
     );
 
-    await this.autoSync();
+    await this.autoSyncBlocks();
+    await this.clearMempool();
+    await this.autoSyncMempool();
     this.checkFullySynced();
   }
 
-  async autoSync() {
-    clearTimeout(this.tautoSync);
+  async autoSyncBlocks() {
+    clearTimeout(this.tautoSyncBlocks);
     await this.sync();
-    this.tautoSync = setTimeout(() => {
-      this.autoSync();
+    this.tautoSyncBlocks = setTimeout(() => {
+      this.autoSyncBlocks();
     }, 1000);
   }
 
@@ -48,7 +51,7 @@ class Worker {
     });
     const temp = await DB.Settings.findOrCreate({
       where: { name: 'sync' },
-      defaults: { height: START_BLOCK },
+      defaults: { height: START_BLOCK - 1 },
     });
     this.Sync = temp[0];
     this.connected = true;
@@ -68,93 +71,88 @@ class Worker {
     }
   }
 
-  async processTx(tx, height) {
+  async processTx(tx, height, forceUpdate) {
     tx.outputs.map(output => {
       try {
         const script = output.script.slice(0, 8);
-
         if (script === '6a026d01') {
-          const address = tx.inputs[0].address;
-          const mtime = tx.mtime;
-          const hash = tx.hash;
-          const name = output.script.slice(8);
+          const obj = {
+            hash: tx.hash,
+            mtime: tx.mtime,
+            address: tx.inputs[0].address,
+            height,
+            name: output.script.slice(8),
+          };
           // console.log(`${height}: ${address} named: ${Buffer.from(name, 'hex')}`);
-          USE_DB &&
-            DB.Name.create({
-              hash,
-              name,
-              address,
-              height,
-              mtime,
-            });
+          if (forceUpdate) {
+            USE_DB && DB.Name.upsert(obj);
+          } else {
+            USE_DB && DB.Name.create(obj);
+          }
         } else if (script === '6a026d02') {
-          const address = tx.inputs[0].address;
-          const mtime = tx.mtime;
-          const hash = tx.hash;
-          const msg = output.script.slice(8);
+          const obj = {
+            hash: tx.hash,
+            mtime: tx.mtime,
+            address: tx.inputs[0].address,
+            height,
+            msg: output.script.slice(8),
+          };
           // console.log(`${height}: ${address} said: ${Buffer.from(msg, 'hex')}`);
-          USE_DB &&
-            DB.Message.create({
-              hash,
-              msg,
-              address,
-              height,
-              mtime,
-            });
+          if (forceUpdate) {
+            USE_DB && DB.Message.upsert(obj);
+          } else {
+            USE_DB && DB.Message.create(obj);
+          }
         } else if (script === '6a026d03') {
-          const address = tx.inputs[0].address;
-          const mtime = tx.mtime;
-          const hash = tx.hash;
-          const replytx = reverseHexString(
-            output.script.slice(10, 10 + 32 * 2)
-          );
-          const msg = output.script.slice(10 + 32 * 2);
+          const obj = {
+            hash: tx.hash,
+            mtime: tx.mtime,
+            address: tx.inputs[0].address,
+            height,
+            msg: output.script.slice(10 + 32 * 2),
+            replytx: reverseHexString(output.script.slice(10, 10 + 32 * 2)),
+          };
           // console.log(`${height}: ${address} said: ${Buffer.from(msg, 'hex')}`);
-          USE_DB &&
-            DB.Message.create({
-              hash,
-              address,
-              height,
-              mtime,
-              msg,
-              replytx,
-            });
+          if (forceUpdate) {
+            USE_DB && DB.Message.upsert(obj);
+          } else {
+            USE_DB && DB.Message.create(obj);
+          }
         } else if (script === '6a026d04') {
-          const address = tx.inputs[0].address;
-          const mtime = tx.mtime;
-          const hash = tx.hash;
-          const liketx = reverseHexString(output.script.slice(10));
-          let tip = 0;
+          const obj = {
+            hash: tx.hash,
+            mtime: tx.mtime,
+            address: tx.inputs[0].address,
+            height,
+            liketx: reverseHexString(output.script.slice(10)),
+            tip: 0,
+          };
           tx.outputs.map(out => {
-            if (out.address !== address && !isNaN(out.value)) {
-              tip += out.value;
+            if (out.address !== obj.address && !isNaN(out.value)) {
+              obj.tip += out.value;
             }
           });
           // console.log(`${height}: ${address} liked: ${liketx}`);
-          USE_DB &&
-            DB.Like.create({
-              hash,
-              address,
-              height,
-              mtime,
-              liketx,
-              tip,
-            });
+          if (forceUpdate) {
+            USE_DB && DB.Like.upsert(obj);
+          } else {
+            USE_DB && DB.Like.create(obj);
+          }
         } else if (script === '6a026d06' || script === '6a026d07') {
-          const address = tx.inputs[0].address;
-          const mtime = tx.mtime;
-          const hash = tx.hash;
-          const follow = base58check.encode(output.script.slice(10));
+          const obj = {
+            hash: tx.hash,
+            mtime: tx.mtime,
+            address: tx.inputs[0].address,
+            height,
+            follow: base58check.encode(output.script.slice(10)),
+            unfollow: script === '6a026d07',
+          };
           // console.log(`${height}: ${address} followed: ${follow}`);
-          USE_DB &&
-            DB.Follow.create({
-              hash,
-              address,
-              height,
-              mtime,
-              follow,
-              unfollow: script === '6a026d07',
-            });
+          if (forceUpdate) {
+            USE_DB && DB.Follow.upsert(obj);
+          } else {
+            USE_DB && DB.Follow.create(obj);
+          }
         }
       } catch (err) {
         console.log('Parse error', err);
@@ -167,7 +165,6 @@ class Worker {
     this.syncing = true;
 
     try {
-      await this.connect();
       const { endBlock, startBlock } = await this.checkSyncStatus();
       if (startBlock < endBlock) {
         console.log('Syncing Memos...', startBlock, endBlock);
@@ -183,7 +180,7 @@ class Worker {
           const blockObj = bcoin.block.fromRaw(blockBuf, 'hex');
           const block = blockObj.toJSON();
           block.txs.map(async tx => {
-            await this.processTx(tx, height);
+            await this.processTx(tx, height, true);
           });
           await this.Sync.update({ height });
           this.checkFullySynced();
@@ -195,6 +192,43 @@ class Worker {
       console.log('ERROR', err);
     }
     this.syncing = false;
+  }
+
+  async clearMempool() {
+    if (USE_DB) {
+      await this.connect();
+      await DB.Name.destroy({ where: { height: MAX_BLOCK_HEIGHT } });
+      await DB.Like.destroy({ where: { height: MAX_BLOCK_HEIGHT } });
+      await DB.Message.destroy({ where: { height: MAX_BLOCK_HEIGHT } });
+      await DB.Follow.destroy({ where: { height: MAX_BLOCK_HEIGHT } });
+      console.log('!!!!!!!!!!!!!!! Cleared mempool txs !!!!!!!!!!!!!!!');
+    }
+    this.txids = new Set();
+  }
+
+  async autoSyncMempool() {
+    clearTimeout(this.tautoSyncMempool);
+    await this.syncMempool();
+    this.tautoSyncMempool = setTimeout(() => {
+      this.autoSyncMempool();
+    }, 1000);
+  }
+
+  async syncMempool() {
+    try {
+      await this.connect();
+      const txidsArray = await this.bcc.getRawMempool(false);
+      const txids = new Set(txidsArray);
+      const difference = new Set([...txids].filter(x => !this.txids.has(x)));
+      for (const txid of difference) {
+        const rawtx = await this.bcc.getRawTransaction(txid, false);
+        const tx = bcoin.tx.fromRaw(rawtx, 'hex');
+        await this.processTx(tx.toJSON(), MAX_BLOCK_HEIGHT);
+      }
+      this.txids = txids;
+    } catch (err) {
+      console.log('ERROR', err);
+    }
   }
 }
 
