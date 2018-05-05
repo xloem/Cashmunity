@@ -6,51 +6,66 @@ const DEFAULT_LIMIT = 200;
 class Memo {
   constructor() {}
 
-  async messages({ address, height }) {
+  async messages({ address, page = 0 }) {
     const messages = await DB.Message.findAll({
       where: {
         address,
-        height: {
-          [Op.lt]: height || Number.MAX_SAFE_INTEGER,
-        },
       },
       raw: true,
-      attributes: ['hash', 'msg', 'height', 'replytx'],
+      attributes: [
+        'hash',
+        'msg',
+        'height',
+        'replytx',
+        'roottx',
+        'mtime',
+        'topic',
+      ],
       limit: DEFAULT_LIMIT,
+      offset: DEFAULT_LIMIT * page,
       order: [['height', 'DESC']],
     });
     return {
       messages,
     };
   }
-  async replies({ replytx, height }) {
+  async replies({ tx, page = 0 }) {
     const replies = await DB.Message.findAll({
       where: {
-        replytx,
-        height: {
-          [Op.lt]: height || Number.MAX_SAFE_INTEGER,
+        [Op.or]: {
+          replytx: tx,
+          roottx: tx,
+          hash: tx,
         },
       },
       raw: true,
-      attributes: ['hash', 'msg', 'address', 'height', 'replytx'],
+      attributes: [
+        'hash',
+        'msg',
+        'address',
+        'height',
+        'replytx',
+        'roottx',
+        'mtime',
+        'topic',
+      ],
       limit: DEFAULT_LIMIT,
+      offset: DEFAULT_LIMIT * page,
       order: [['height', 'DESC']],
     });
     return {
       replies,
     };
   }
-  async likes({ address, height }) {
+  async likes({ address, page = 0 }) {
     const likes = await DB.Like.findAll({
       where: {
         address,
-        height: {
-          [Op.lt]: height || Number.MAX_SAFE_INTEGER,
-        },
       },
       raw: true,
-      attributes: ['hash', 'liketx', 'tip', 'height'],
+      attributes: ['hash', 'liketx', 'tip', 'height', 'mtime'],
       limit: DEFAULT_LIMIT,
+      offset: DEFAULT_LIMIT * page,
       order: [['height', 'DESC']],
     });
     return {
@@ -58,16 +73,21 @@ class Memo {
     };
   }
   async name({ address }) {
-    const names = await DB.Name.findAll({
+    const name = await DB.Name.findOne({
       where: {
         address,
       },
       raw: true,
-      attributes: ['name', 'height'],
-      limit: 1,
+      attributes: ['name', 'height', 'mtime'],
       order: [['height', 'DESC']],
     });
-    return names.length > 0 ? names[0] : {};
+    const profile = await DB.Profile.findOne({
+      where: { address },
+      raw: true,
+      attributes: ['profile', 'height', 'mtime'],
+      order: [['height', 'DESC']],
+    });
+    return { ...name, ...profile };
   }
   async follows({ address }) {
     const follows = await DB.Follow.findAll({
@@ -84,32 +104,47 @@ class Memo {
     });
     return followMap;
   }
-  async feed({ address, height }) {
+  async feed({ address, page = 0 }) {
     const follows = await this.follows({ address });
     const messages = await DB.Message.findAll({
       where: {
         address: [address, ...Object.keys(follows)],
-        height: {
-          [Op.lt]: height || Number.MAX_SAFE_INTEGER,
-        },
       },
       raw: true,
-      attributes: ['hash', 'msg', 'height'],
+      attributes: [
+        'hash',
+        'msg',
+        'height',
+        'mtime',
+        'replytx',
+        'roottx',
+        'topic',
+      ],
       limit: DEFAULT_LIMIT,
+      offset: DEFAULT_LIMIT * page,
       order: [['height', 'DESC']],
     });
     return { messages };
   }
-  async top({ height }) {
+  async top({ page = 0 }) {
     const messages = await DB.Message.findAll({
-      where: {
-        height: {
-          [Op.lt]: height || Number.MAX_SAFE_INTEGER,
-        },
-      },
+      // where: {
+      //   height: {
+      //     [Op.lt]: height || Number.MAX_SAFE_INTEGER,
+      //   },
+      // },
       raw: true,
-      attributes: ['hash', 'msg', 'address', 'height'],
+      attributes: [
+        'hash',
+        'msg',
+        'address',
+        'height',
+        'replytx',
+        'roottx',
+        'topic',
+      ],
       limit: DEFAULT_LIMIT,
+      offset: DEFAULT_LIMIT * page,
       order: [['height', 'DESC']],
     });
     return { messages };

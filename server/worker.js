@@ -20,6 +20,21 @@ class Worker {
     this.start();
   }
 
+  async connect() {
+    if (this.connected) return;
+    console.log('Loading database...');
+    await DB.sequelize.sync({
+      // force: true,
+    });
+    const temp = await DB.Settings.findOrCreate({
+      where: { name: 'sync' },
+      defaults: { height: START_BLOCK - 1 },
+    });
+    this.Sync = temp[0];
+    this.connected = true;
+    console.log('Database loaded');
+  }
+
   async start() {
     this.bcc = new BCC(
       CONFIG.host || '127.0.0.1',
@@ -43,21 +58,6 @@ class Worker {
     }, 1000);
   }
 
-  async connect() {
-    if (this.connected) return;
-    console.log('Loading database...');
-    await DB.sequelize.sync({
-      // force: true,
-    });
-    const temp = await DB.Settings.findOrCreate({
-      where: { name: 'sync' },
-      defaults: { height: START_BLOCK - 1 },
-    });
-    this.Sync = temp[0];
-    this.connected = true;
-    console.log('Database loaded');
-  }
-
   async checkSyncStatus() {
     await this.connect();
     const endBlock = await this.bcc.getBlockCount();
@@ -72,86 +72,76 @@ class Worker {
   }
 
   async processTx(tx, height, forceUpdate) {
-    tx.outputs.map(output => {
+    tx.outputs.map(async output => {
       try {
-        const script = output.script.slice(0, 8);
+        const script = output.script.slice(0, 8).toLowerCase();
+        let obj;
+        let model;
         if (script === '6a026d01') {
-          const obj = {
-            hash: tx.hash,
-            mtime: tx.mtime,
-            address: tx.inputs[0].address,
-            height,
+          model = DB.Name;
+          obj = {
             name: output.script.slice(8),
           };
           // console.log(`${height}: ${address} named: ${Buffer.from(name, 'hex')}`);
-          if (forceUpdate) {
-            USE_DB && DB.Name.upsert(obj);
-          } else {
-            USE_DB && DB.Name.create(obj);
-          }
         } else if (script === '6a026d02') {
-          const obj = {
-            hash: tx.hash,
-            mtime: tx.mtime,
-            address: tx.inputs[0].address,
-            height,
+          model = DB.Message;
+          obj = {
             msg: output.script.slice(8),
           };
           // console.log(`${height}: ${address} said: ${Buffer.from(msg, 'hex')}`);
-          if (forceUpdate) {
-            USE_DB && DB.Message.upsert(obj);
-          } else {
-            USE_DB && DB.Message.create(obj);
-          }
         } else if (script === '6a026d03') {
-          const obj = {
-            hash: tx.hash,
-            mtime: tx.mtime,
-            address: tx.inputs[0].address,
-            height,
+          model = DB.Message;
+          obj = {
             msg: output.script.slice(10 + 32 * 2),
             replytx: reverseHexString(output.script.slice(10, 10 + 32 * 2)),
+            // roottx: undefined,
           };
+          // Find the parent tx
+          obj.roottx = await this.lookupRootTx(obj.replytx);
           // console.log(`${height}: ${address} said: ${Buffer.from(msg, 'hex')}`);
-          if (forceUpdate) {
-            USE_DB && DB.Message.upsert(obj);
-          } else {
-            USE_DB && DB.Message.create(obj);
-          }
         } else if (script === '6a026d04') {
-          const obj = {
-            hash: tx.hash,
-            mtime: tx.mtime,
-            address: tx.inputs[0].address,
-            height,
+          model = DB.Like;
+          obj = {
             liketx: reverseHexString(output.script.slice(10)),
-            tip: 0,
+            tip: tx.outputs.reduce((previous, out) => {
+              return previous +
+                (out.address !== tx.inputs[0].address && !isNaN(out.value))
+                ? out.value
+                : 0;
+            }, 0),
           };
-          tx.outputs.map(out => {
-            if (out.address !== obj.address && !isNaN(out.value)) {
-              obj.tip += out.value;
-            }
-          });
           // console.log(`${height}: ${address} liked: ${liketx}`);
-          if (forceUpdate) {
-            USE_DB && DB.Like.upsert(obj);
-          } else {
-            USE_DB && DB.Like.create(obj);
-          }
+        } else if (script === '6a026d05') {
+          model = DB.Profile;
+          obj = {
+            profile: output.script.slice(8),
+          };
+          // console.log(`${height}: ${address} set profile: ${liketx}`);
         } else if (script === '6a026d06' || script === '6a026d07') {
-          const obj = {
-            hash: tx.hash,
-            mtime: tx.mtime,
-            address: tx.inputs[0].address,
-            height,
+          model = DB.Follow;
+          obj = {
             follow: base58check.encode(output.script.slice(10)),
             unfollow: script === '6a026d07',
           };
           // console.log(`${height}: ${address} followed: ${follow}`);
+        } else if (script === '6a026d0c') {
+          const topicLength = parseInt(output.script.slice(8, 10), 16);
+          model = DB.Message;
+          obj = {
+            topic: output.script.slice(10, 10 + topicLength * 2),
+            msg: output.script.slice(10 + topicLength * 2),
+          };
+          // console.log(`Topic ${obj.topic}: ${Buffer.from(obj.msg, 'hex')}`);
+        }
+        if (USE_DB && obj) {
+          obj.hash = tx.hash;
+          obj.address = tx.inputs[0].address;
+          obj.height = height;
           if (forceUpdate) {
-            USE_DB && DB.Follow.upsert(obj);
+            model.upsert(obj);
           } else {
-            USE_DB && DB.Follow.create(obj);
+            obj.mtime = tx.mtime; // First seen
+            model.create(obj);
           }
         }
       } catch (err) {
@@ -229,6 +219,43 @@ class Worker {
     } catch (err) {
       console.log('ERROR', err);
     }
+  }
+
+  async lookupRootTx(replytx) {
+    let roottx;
+    try {
+      const tempTxs = {};
+      let lookuptx = replytx;
+      do {
+        const msg = await DB.Message.findOne({
+          where: { hash: lookuptx },
+          raw: true,
+          attributes: ['hash', 'replytx', 'roottx'],
+        });
+        lookuptx = null;
+        if (msg) {
+          if (tempTxs[msg.hash]) {
+            // Loop. Break out
+          } else if (msg.roottx) {
+            roottx = msg.roottx;
+          } else if (msg.replytx) {
+            lookuptx = msg.replytx;
+          } else if (msg.hash) {
+            roottx = msg.hash;
+          } else {
+            throw new Error('Sould not happen');
+          }
+          tempTxs[msg.hash] = true;
+        } else {
+          console.log(
+            '*************************** COULD NOT FIND TX ***************************'
+          );
+        }
+      } while (lookuptx);
+    } catch (err) {
+      console.log('ERROR roottx lookup', err);
+    }
+    return roottx;
   }
 }
 

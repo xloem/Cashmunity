@@ -1,27 +1,24 @@
 module.exports = function(sequelize, DataTypes) {
   return sequelize.define(
-    'Message',
+    'Profile',
     {
       hash: {
         type: DataTypes.STRING,
         unique: true,
         primaryKey: true,
       },
+      address: DataTypes.STRING,
+      profile: DataTypes.STRING(512),
       height: DataTypes.BIGINT,
       mtime: DataTypes.BIGINT,
-      address: DataTypes.STRING,
-      replytx: DataTypes.STRING,
-      roottx: DataTypes.STRING,
-      msg: DataTypes.STRING(512),
-      topic: DataTypes.STRING(512),
     },
     {
-      tableName: 'messages',
+      tableName: 'profiles',
       timestamps: false,
       indexes: [
         {
           // unique: true,
-          fields: ['hash', 'address', 'replytx', 'roottx'],
+          fields: ['address'],
         },
       ],
     }
