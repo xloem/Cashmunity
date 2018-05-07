@@ -74,64 +74,140 @@ class Worker {
   async processTx(tx, height, forceUpdate) {
     tx.outputs.map(async output => {
       try {
-        const script = output.script.slice(0, 8).toLowerCase();
+        const scriptM1 = output.script.slice(0, 4).toLowerCase();
+        const scriptM2 = output.script.slice(4, 8).toLowerCase();
+        const scriptBP1 = output.script.slice(0, 4).toLowerCase();
+        const scriptBP2 = output.script.slice(6, 10).toLowerCase();
         let obj;
         let model;
-        if (script === '6a026d01') {
-          model = DB.Name;
-          obj = {
-            name: output.script.slice(8),
-          };
-          // console.log(`${height}: ${address} named: ${Buffer.from(name, 'hex')}`);
-        } else if (script === '6a026d02') {
-          model = DB.Message;
-          obj = {
-            msg: output.script.slice(8),
-          };
-          // console.log(`${height}: ${address} said: ${Buffer.from(msg, 'hex')}`);
-        } else if (script === '6a026d03') {
-          model = DB.Message;
-          obj = {
-            msg: output.script.slice(10 + 32 * 2),
-            replytx: reverseHexString(output.script.slice(10, 10 + 32 * 2)),
-            // roottx: undefined,
-          };
-          // Find the parent tx
-          obj.roottx = await this.lookupRootTx(obj.replytx);
-          // console.log(`${height}: ${address} said: ${Buffer.from(msg, 'hex')}`);
-        } else if (script === '6a026d04') {
-          model = DB.Like;
-          obj = {
-            liketx: reverseHexString(output.script.slice(10)),
-            tip: tx.outputs.reduce((previous, out) => {
-              return previous +
-                (out.address !== tx.inputs[0].address && !isNaN(out.value))
-                ? out.value
-                : 0;
-            }, 0),
-          };
-          // console.log(`${height}: ${address} liked: ${liketx}`);
-        } else if (script === '6a026d05') {
-          model = DB.Profile;
-          obj = {
-            profile: output.script.slice(8),
-          };
-          // console.log(`${height}: ${address} set profile: ${liketx}`);
-        } else if (script === '6a026d06' || script === '6a026d07') {
-          model = DB.Follow;
-          obj = {
-            follow: base58check.encode(output.script.slice(10)),
-            unfollow: script === '6a026d07',
-          };
-          // console.log(`${height}: ${address} followed: ${follow}`);
-        } else if (script === '6a026d0c') {
-          const topicLength = parseInt(output.script.slice(8, 10), 16);
-          model = DB.Message;
-          obj = {
-            topic: output.script.slice(10, 10 + topicLength * 2),
-            msg: output.script.slice(10 + topicLength * 2),
-          };
-          // console.log(`Topic ${obj.topic}: ${Buffer.from(obj.msg, 'hex')}`);
+        if (scriptM1 === '6a02') {
+          // Potential Memo TX
+          if (scriptM2 === '6d01') {
+            model = DB.Name;
+            obj = {
+              name: output.script.slice(8),
+              protocol: 'memo',
+            };
+            // console.log(`${height}: ${address} named: ${Buffer.from(name, 'hex')}`);
+          } else if (scriptM2 === '6d02') {
+            model = DB.Message;
+            obj = {
+              msg: output.script.slice(8),
+              protocol: 'memo',
+            };
+            // console.log(`${height}: ${address} said: ${Buffer.from(msg, 'hex')}`);
+          } else if (scriptM2 === '6d03') {
+            model = DB.Message;
+            obj = {
+              msg: output.script.slice(10 + 32 * 2),
+              replytx: reverseHexString(output.script.slice(10, 10 + 32 * 2)),
+              // roottx: undefined,
+              protocol: 'memo',
+            };
+            // Find the parent tx
+            obj.roottx = await this.lookupRootTx(obj.replytx);
+            // console.log(`${height}: ${address} said: ${Buffer.from(msg, 'hex')}`);
+          } else if (scriptM2 === '6d04') {
+            model = DB.Like;
+            obj = {
+              liketx: reverseHexString(output.script.slice(10)),
+              tip: tx.outputs.reduce((previous, out) => {
+                return previous +
+                  (out.address !== tx.inputs[0].address && !isNaN(out.value))
+                  ? out.value
+                  : 0;
+              }, 0),
+              protocol: 'memo',
+            };
+            // console.log(`${height}: ${address} liked: ${liketx}`);
+          } else if (scriptM2 === '6d05') {
+            model = DB.Profile;
+            obj = {
+              profile: output.script.slice(8),
+              protocol: 'memo',
+            };
+            // console.log(`${height}: ${address} set profile: ${liketx}`);
+          } else if (scriptM2 === '6d06' || scriptM2 === '6d07') {
+            model = DB.Follow;
+            obj = {
+              follow: base58check.encode(output.script.slice(10)),
+              unfollow: scriptM2 === '6d07',
+              protocol: 'memo',
+            };
+            // console.log(`${height}: ${address} followed: ${follow}`);
+          } else if (scriptM2 === '6d0c') {
+            const topicLength = parseInt(output.script.slice(8, 10), 16);
+            model = DB.Message;
+            obj = {
+              topic: output.script.slice(10, 10 + topicLength * 2),
+              msg: output.script.slice(10 + topicLength * 2),
+              protocol: 'memo',
+            };
+            // console.log(`Topic ${obj.topic}: ${Buffer.from(obj.msg, 'hex')}`);
+          }
+        } else if (scriptBP1 === '6a4c') {
+          // Potential Blockpress TX
+          if (scriptBP2 === '8d01') {
+            model = DB.Name;
+            obj = {
+              name: output.script.slice(8),
+              protocol: 'blockpress',
+            };
+            // console.log(`${height}: ${address} named: ${Buffer.from(name, 'hex')}`);
+          } else if (scriptBP2 === '8d02') {
+            model = DB.Message;
+            obj = {
+              msg: output.script.slice(8),
+              protocol: 'blockpress',
+            };
+            // console.log(`${height}: ${address} said: ${Buffer.from(msg, 'hex')}`);
+          } else if (scriptBP2 === '8d03') {
+            model = DB.Message;
+            obj = {
+              msg: output.script.slice(10 + 32 * 2),
+              replytx: output.script.slice(10, 10 + 32 * 2),
+              // roottx: undefined,
+              protocol: 'blockpress',
+            };
+            // Find the parent tx
+            obj.roottx = await this.lookupRootTx(obj.replytx);
+            // console.log(`${height}: ${address} said: ${Buffer.from(msg, 'hex')}`);
+          } else if (scriptBP2 === '8d04') {
+            model = DB.Like;
+            obj = {
+              liketx: output.script.slice(10, 10 + 32 * 2),
+              tip: tx.outputs.reduce((previous, out) => {
+                return previous +
+                  (out.address !== tx.inputs[0].address && !isNaN(out.value))
+                  ? out.value
+                  : 0;
+              }, 0),
+              protocol: 'blockpress',
+            };
+            // console.log(`${height}: ${address} liked: ${liketx}`);
+          } else if (scriptBP2 === '8d06' || scriptBP2 === '8d07') {
+            model = DB.Follow;
+            obj = {
+              follow: base58check.encode(output.script.slice(10)),
+              unfollow: scriptBP2 === '8d07',
+              protocol: 'blockpress',
+            };
+            // console.log(`${height}: ${address} followed: ${follow}`);
+          } else if (scriptBP2 === '8d08') {
+            model = DB.Header;
+            obj = {
+              header: output.script.slice(8),
+              protocol: 'blockpress',
+            };
+            // console.log(`${height}: ${address} set profile: ${liketx}`);
+          } else if (scriptBP2 === '8d10') {
+            model = DB.Avatar;
+            obj = {
+              avatar: output.script.slice(8),
+              protocol: 'blockpress',
+            };
+            // console.log(`${height}: ${address} set profile: ${liketx}`);
+          }
         }
         if (USE_DB && obj) {
           obj.hash = tx.hash;

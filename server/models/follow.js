@@ -12,6 +12,7 @@ module.exports = function(sequelize, DataTypes) {
       height: DataTypes.BIGINT,
       mtime: DataTypes.BIGINT,
       unfollow: DataTypes.BOOLEAN,
+      protocol: DataTypes.ENUM('memo', 'blockpress'),
     },
     {
       tableName: 'follows',

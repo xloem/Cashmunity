@@ -20,6 +20,7 @@ class Memo {
         'roottx',
         'mtime',
         'topic',
+        'protocol',
       ],
       limit: DEFAULT_LIMIT,
       offset: DEFAULT_LIMIT * page,
@@ -48,6 +49,7 @@ class Memo {
         'roottx',
         'mtime',
         'topic',
+        'protocol',
       ],
       limit: DEFAULT_LIMIT,
       offset: DEFAULT_LIMIT * page,
@@ -63,7 +65,7 @@ class Memo {
         address,
       },
       raw: true,
-      attributes: ['hash', 'liketx', 'tip', 'height', 'mtime'],
+      attributes: ['hash', 'liketx', 'tip', 'height', 'mtime', 'protocol'],
       limit: DEFAULT_LIMIT,
       offset: DEFAULT_LIMIT * page,
       order: [['height', 'DESC']],
@@ -78,16 +80,31 @@ class Memo {
         address,
       },
       raw: true,
-      attributes: ['name', 'height', 'mtime'],
+      attributes: ['name', 'protocol'],
       order: [['height', 'DESC']],
     });
     const profile = await DB.Profile.findOne({
       where: { address },
       raw: true,
-      attributes: ['profile', 'height', 'mtime'],
+      attributes: ['profile'],
       order: [['height', 'DESC']],
     });
     return { ...name, ...profile };
+  }
+  async allNames({ addresses }) {
+    const names = await DB.Name.findAll({
+      where: {
+        address: addresses,
+      },
+      raw: true,
+      attributes: ['name', 'address', 'protocol'],
+      order: [['height', 'ASC']],
+    });
+    const returnNames = {};
+    names.map(name => {
+      returnNames[name.address] = name.name;
+    });
+    return returnNames;
   }
   async follows({ address }) {
     const follows = await DB.Follow.findAll({
@@ -95,7 +112,7 @@ class Memo {
         address,
       },
       raw: true,
-      attributes: ['follow', 'unfollow'],
+      attributes: ['follow', 'unfollow', 'protocol'],
       order: [['height', 'ASC']],
     });
     const followMap = {};
@@ -119,6 +136,7 @@ class Memo {
         'replytx',
         'roottx',
         'topic',
+        'protocol',
       ],
       limit: DEFAULT_LIMIT,
       offset: DEFAULT_LIMIT * page,
@@ -128,11 +146,6 @@ class Memo {
   }
   async top({ page = 0 }) {
     const messages = await DB.Message.findAll({
-      // where: {
-      //   height: {
-      //     [Op.lt]: height || Number.MAX_SAFE_INTEGER,
-      //   },
-      // },
       raw: true,
       attributes: [
         'hash',
@@ -142,12 +155,19 @@ class Memo {
         'replytx',
         'roottx',
         'topic',
+        'mtime',
+        'protocol',
       ],
       limit: DEFAULT_LIMIT,
       offset: DEFAULT_LIMIT * page,
       order: [['height', 'DESC']],
     });
-    return { messages };
+    const temp = {};
+    messages.map(message => {
+      temp[message.address] = true;
+    });
+    const names = await this.allNames({ addresses: Object.keys(temp) });
+    return { messages, names };
   }
 }
 

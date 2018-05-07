@@ -14,6 +14,7 @@ module.exports = function(sequelize, DataTypes) {
       roottx: DataTypes.STRING,
       msg: DataTypes.STRING(512),
       topic: DataTypes.STRING(512),
+      protocol: DataTypes.ENUM('memo', 'blockpress'),
     },
     {
       tableName: 'messages',
@@ -21,7 +22,7 @@ module.exports = function(sequelize, DataTypes) {
       indexes: [
         {
           // unique: true,
-          fields: ['hash', 'address', 'replytx', 'roottx'],
+          fields: ['hash', 'address', 'replytx', 'roottx', 'topic'],
         },
       ],
     }

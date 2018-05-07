@@ -22,6 +22,8 @@ const Like = sequelize.import(__dirname + '/models/like.js');
 const Message = sequelize.import(__dirname + '/models/message.js');
 const Name = sequelize.import(__dirname + '/models/name.js');
 const Profile = sequelize.import(__dirname + '/models/profile.js');
+const Avatar = sequelize.import(__dirname + '/models/avatar.js');
+const Header = sequelize.import(__dirname + '/models/header.js');
 const Settings = sequelize.import(__dirname + '/models/settings.js');
 
 module.exports = {
@@ -31,6 +33,8 @@ module.exports = {
   Profile,
   Message,
   Settings,
+  Avatar,
+  Header,
   Sequelize,
   sequelize,
 };

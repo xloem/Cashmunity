@@ -1,6 +1,6 @@
 module.exports = function(sequelize, DataTypes) {
   return sequelize.define(
-    'Like',
+    'Header',
     {
       hash: {
         type: DataTypes.STRING,
@@ -8,19 +8,18 @@ module.exports = function(sequelize, DataTypes) {
         primaryKey: true,
       },
       address: DataTypes.STRING,
-      liketx: DataTypes.STRING,
-      tip: DataTypes.BIGINT,
+      header: DataTypes.STRING(512),
       height: DataTypes.BIGINT,
       mtime: DataTypes.BIGINT,
       protocol: DataTypes.ENUM('memo', 'blockpress'),
     },
     {
-      tableName: 'likes',
+      tableName: 'headers',
       timestamps: false,
       indexes: [
         {
           // unique: true,
-          fields: ['liketx', 'address'],
+          fields: ['address'],
         },
       ],
     }

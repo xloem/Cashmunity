@@ -11,6 +11,7 @@ module.exports = function(sequelize, DataTypes) {
       name: DataTypes.STRING,
       height: DataTypes.BIGINT,
       mtime: DataTypes.BIGINT,
+      protocol: DataTypes.ENUM('memo', 'blockpress'),
     },
     {
       tableName: 'names',
