@@ -78,6 +78,7 @@ class Worker {
         const scriptM2 = output.script.slice(4, 8).toLowerCase();
         const scriptBP1 = output.script.slice(0, 4).toLowerCase();
         const scriptBP2 = output.script.slice(6, 10).toLowerCase();
+        const scriptBP3 = output.script.slice(4, 8).toLowerCase();
         let obj;
         let model;
         if (scriptM1 === '6a02') {
@@ -127,14 +128,22 @@ class Worker {
               protocol: 'memo',
             };
             // console.log(`${height}: ${address} set profile: ${liketx}`);
-          } else if (scriptM2 === '6d06' || scriptM2 === '6d07') {
+          } else if (scriptM2 === '6d06') {
             model = DB.Follow;
             obj = {
-              follow: base58check.encode(output.script.slice(10)),
-              unfollow: scriptM2 === '6d07',
+              follow: base58check.encode(output.script.slice(10, 10 + 35 * 2)),
+              unfollow: false,
               protocol: 'memo',
             };
             // console.log(`${height}: ${address} followed: ${follow}`);
+          } else if (scriptM2 === '6d07') {
+            model = DB.Follow;
+            obj = {
+              follow: base58check.encode(output.script.slice(10, 10 + 35 * 2)),
+              unfollow: true,
+              protocol: 'memo',
+            };
+            // console.log(`${height}: ${address} unfollowed: ${follow}`);
           } else if (scriptM2 === '6d0c') {
             const topicLength = parseInt(output.script.slice(8, 10), 16);
             model = DB.Message;
@@ -147,21 +156,23 @@ class Worker {
           }
         } else if (scriptBP1 === '6a4c') {
           // Potential Blockpress TX
-          if (scriptBP2 === '8d01') {
+          if (scriptBP2 === '8d01' || scriptBP3 === '8d01') {
+            const start = scriptBP2 === '8d01' ? 10 : 8;
             model = DB.Name;
             obj = {
-              name: output.script.slice(10),
+              name: output.script.slice(start),
               protocol: 'blockpress',
             };
             // console.log(`${height}: ${address} named: ${Buffer.from(name, 'hex')}`);
-          } else if (scriptBP2 === '8d02') {
+          } else if (scriptBP2 === '8d02' || scriptBP3 === '8d02') {
+            const start = scriptBP2 === '8d02' ? 10 : 8;
             model = DB.Message;
             obj = {
-              msg: output.script.slice(10),
+              msg: output.script.slice(start),
               protocol: 'blockpress',
             };
             // console.log(`${height}: ${address} said: ${Buffer.from(msg, 'hex')}`);
-          } else if (scriptBP2 === '8d03') {
+          } else if (scriptBP2 === '8d03' || scriptBP3 === '8d03') {
             model = DB.Message;
             obj = {
               msg: output.script.slice(10 + 32 * 2),
@@ -172,7 +183,7 @@ class Worker {
             // Find the parent tx
             obj.roottx = await this.lookupRootTx(obj.replytx);
             // console.log(`${height}: ${address} said: ${Buffer.from(msg, 'hex')}`);
-          } else if (scriptBP2 === '8d04') {
+          } else if (scriptBP2 === '8d04' || scriptBP3 === '8d04') {
             model = DB.Like;
             obj = {
               liketx: output.script.slice(10, 10 + 32 * 2),
@@ -185,28 +196,47 @@ class Worker {
               protocol: 'blockpress',
             };
             // console.log(`${height}: ${address} liked: ${liketx}`);
-          } else if (scriptBP2 === '8d06' || scriptBP2 === '8d07') {
+          } else if (scriptBP2 === '8d06' || scriptBP3 === '8d06') {
             model = DB.Follow;
             obj = {
-              follow: base58check.encode(output.script.slice(10)),
-              unfollow: scriptBP2 === '8d07',
+              follow: new Buffer(output.script.slice(10), 'hex').toString(),
+              unfollow: false,
               protocol: 'blockpress',
             };
             // console.log(`${height}: ${address} followed: ${follow}`);
-          } else if (scriptBP2 === '8d08') {
+          } else if (scriptBP2 === '8d07' || scriptBP3 === '8d07') {
+            model = DB.Follow;
+            obj = {
+              follow: new Buffer(output.script.slice(10), 'hex').toString(),
+              unfollow: true,
+              protocol: 'blockpress',
+            };
+            // console.log(`${height}: ${address} unfollowed: ${follow}`);
+          } else if (scriptBP2 === '8d08' || scriptBP3 === '8d08') {
+            const start = scriptBP2 === '8d08' ? 10 : 8;
             model = DB.Header;
             obj = {
-              header: output.script.slice(10),
+              header: output.script.slice(start, start + 35 * 2),
               protocol: 'blockpress',
             };
             // console.log(`${height}: ${address} set profile: ${liketx}`);
-          } else if (scriptBP2 === '8d10') {
+          } else if (scriptBP2 === '8d10' || scriptBP3 === '8d10') {
+            const start = scriptBP2 === '8d10' ? 10 : 8;
             model = DB.Avatar;
             obj = {
-              avatar: output.script.slice(10),
+              avatar: output.script.slice(start, start + 35 * 2),
               protocol: 'blockpress',
             };
             // console.log(`${height}: ${address} set profile: ${liketx}`);
+          } else if (scriptBP3 === '8d11') {
+            const topicLength = parseInt(output.script.slice(8, 10), 16);
+            model = DB.Message;
+            obj = {
+              topic: output.script.slice(10, 10 + topicLength * 2),
+              msg: output.script.slice(10 + topicLength * 2),
+              protocol: 'blockpress',
+            };
+            // console.log(`Topic ${obj.topic}: ${Buffer.from(obj.msg, 'hex')}`);
           }
         }
         if (USE_DB && obj) {
@@ -336,9 +366,3 @@ class Worker {
 }
 
 module.exports = Worker;
-
-// getblockcount
-// getbestblockhash
-// getblockhash height
-// getblock "blockhash" ( verbose )
-// getrawtransaction "txid" ( verbose )
