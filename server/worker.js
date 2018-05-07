@@ -150,14 +150,14 @@ class Worker {
           if (scriptBP2 === '8d01') {
             model = DB.Name;
             obj = {
-              name: output.script.slice(8),
+              name: output.script.slice(10),
               protocol: 'blockpress',
             };
             // console.log(`${height}: ${address} named: ${Buffer.from(name, 'hex')}`);
           } else if (scriptBP2 === '8d02') {
             model = DB.Message;
             obj = {
-              msg: output.script.slice(8),
+              msg: output.script.slice(10),
               protocol: 'blockpress',
             };
             // console.log(`${height}: ${address} said: ${Buffer.from(msg, 'hex')}`);
@@ -196,14 +196,14 @@ class Worker {
           } else if (scriptBP2 === '8d08') {
             model = DB.Header;
             obj = {
-              header: output.script.slice(8),
+              header: output.script.slice(10),
               protocol: 'blockpress',
             };
             // console.log(`${height}: ${address} set profile: ${liketx}`);
           } else if (scriptBP2 === '8d10') {
             model = DB.Avatar;
             obj = {
-              avatar: output.script.slice(8),
+              avatar: output.script.slice(10),
               protocol: 'blockpress',
             };
             // console.log(`${height}: ${address} set profile: ${liketx}`);
