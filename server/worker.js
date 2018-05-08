@@ -89,7 +89,6 @@ class Worker {
         let model;
         const script1 = output.script.slice(0, 4);
         const script2 = output.script.slice(4, 8);
-        const script3 = output.script.slice(8, 10);
         if (script1 === '6a02') {
           // Potential Memo TX
           if (script2 === '6d01') {
