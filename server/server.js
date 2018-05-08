@@ -7,7 +7,7 @@ const cors = require('cors');
 const Query = require('./query');
 const query = new Query();
 const Worker = require('./worker');
-const worker = new Worker(); // eslint-disable-line no-unused-vars
+const worker = new Worker();
 
 const LOG = true;
 const PORT = 8081;
@@ -48,6 +48,10 @@ app.get('/feed/:address', async (req, res) => {
 app.get('/top', async (req, res) => {
   LOG && console.log('/top', req.query);
   res.json(await query.top(req.query));
+});
+app.post('/post', async (req, res) => {
+  LOG && console.log('/post', req.body);
+  res.json(await worker.boadcastTransaction(req.body));
 });
 
 app.listen(PORT, HOST, () => console.log(`Listening on port ${PORT}`));

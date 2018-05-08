@@ -4,8 +4,6 @@ const Op = DB.Sequelize.Op;
 const DEFAULT_LIMIT = 200;
 
 class Query {
-  constructor() {}
-
   async messages({ address, page = 0 }) {
     const messages = await DB.Message.findAll({
       where: {

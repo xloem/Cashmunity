@@ -26,6 +26,7 @@ if (DB_DIALECT && DB_DIALECT !== 'sqlite') {
 } else {
   sequelize = new Sequelize('sqlite:db/database.db', {
     operatorsAliases: Sequelize.Op,
+    logging: false,
   });
 }
 

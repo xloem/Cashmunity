@@ -11,7 +11,7 @@ const {
 } = require('./config');
 
 const USE_DB = true;
-const SHOW_LOGS = false;
+const SHOW_LOGS = true;
 const THROW_ERRORS = true;
 const START_BLOCK = 525471;
 const MAX_BLOCK_HEIGHT = 999999999999;
@@ -99,7 +99,7 @@ class Worker {
             };
             SHOW_LOGS &&
               console.log(`Memo Name: ${Buffer.from(obj.name, 'hex')}`);
-            SHOW_LOGS && console.log(obj.name);
+            // SHOW_LOGS && console.log(obj.name);
           } else if (script2 === '6d02') {
             model = DB.Message;
             obj = {
@@ -108,7 +108,7 @@ class Worker {
             };
             SHOW_LOGS &&
               console.log(`Memo message: ${Buffer.from(obj.msg, 'hex')}`);
-            SHOW_LOGS && console.log(obj.msg);
+            // SHOW_LOGS && console.log(obj.msg);
           } else if (script2 === '6d03') {
             model = DB.Message;
             obj = {
@@ -123,7 +123,7 @@ class Worker {
               console.log(
                 `Memo reply: ${obj.replytx}, ${Buffer.from(obj.msg, 'hex')}`
               );
-            SHOW_LOGS && console.log(output.script.slice(8));
+            // SHOW_LOGS && console.log(output.script.slice(8));
           } else if (script2 === '6d04') {
             model = DB.Like;
             obj = {
@@ -148,7 +148,7 @@ class Worker {
             };
             SHOW_LOGS &&
               console.log(`Memo profile: ${Buffer.from(obj.profile, 'hex')}`);
-            SHOW_LOGS && console.log(obj.profile);
+            // SHOW_LOGS && console.log(obj.profile);
           } else if (script2 === '6d06') {
             model = DB.Follow;
             obj = {
@@ -421,6 +421,11 @@ class Worker {
       if (THROW_ERRORS) throw err;
     }
     return roottx;
+  }
+
+  async boadcastTransaction({ tx }) {
+    await this.connect();
+    return await this.bcc.sendRawTransaction(tx);
   }
 }
 
