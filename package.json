@@ -1,7 +1,7 @@
 {
   "name": "Cashmunity",
   "version": "0.0.1",
-  "description": "Bitcoin Cash ",
+  "description": "Lightweight backend scans and normalizes the Bitcoin Cash blockchain for protocol transactions",
   "main": "server/server.js",
   "homepage": "https://github.com/kevinejohn/Cashmunity",
   "scripts": {
@@ -10,6 +10,13 @@
     "lint": "node_modules/.bin/eslint server/*.js server/**/*.js",
     "prettier": "prettier --write --single-quote --trailing-comma es5 server/*.js server/**/*.js"
   },
+  "keywords": [
+    "bitcoin",
+    "cash",
+    "memo",
+    "blockpress",
+    "social"
+  ],
   "author": "Kevin Johnson (KevinEJohn)",
   "license": "MIT",
   "dependencies": {

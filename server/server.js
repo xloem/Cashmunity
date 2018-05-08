@@ -23,15 +23,15 @@ app.get('/', (req, res) => {
 });
 app.get('/messages/:address', async (req, res) => {
   LOG && console.log('/messages', req.params);
-  res.json(await query.messages({ ...req.params, height: req.query.height }));
+  res.json(await query.messages({ ...req.params, page: req.query.page }));
 });
 app.get('/replies/:replytx', async (req, res) => {
   LOG && console.log('/replies', req.params);
-  res.json(await query.replies({ ...req.params, height: req.query.height }));
+  res.json(await query.replies({ ...req.params, page: req.query.page }));
 });
 app.get('/likes/:address', async (req, res) => {
   LOG && console.log('/likes', req.params);
-  res.json(await query.likes({ ...req.params, height: req.query.height }));
+  res.json(await query.likes({ ...req.params, page: req.query.page }));
 });
 app.get('/name/:address', async (req, res) => {
   LOG && console.log('/name', req.params);
@@ -43,11 +43,11 @@ app.get('/follows/:address', async (req, res) => {
 });
 app.get('/feed/:address', async (req, res) => {
   LOG && console.log('/feed', req.params);
-  res.json(await query.feed({ ...req.params, height: req.query.height }));
+  res.json(await query.feed({ ...req.params, page: req.query.page }));
 });
 app.get('/top', async (req, res) => {
   LOG && console.log('/top', req.query);
-  res.json(await query.top(req.query));
+  res.json(await query.top({ page: req.query.page }));
 });
 app.post('/post', async (req, res) => {
   LOG && console.log('/post', req.body);
