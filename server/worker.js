@@ -186,9 +186,9 @@ class Worker {
         if (script1 === '6a4c' || script1 === '6a02') {
           // Protocol change on May 6th 2018 requires 2 checks
           // Potential Blockpress TX
-          const scriptBP1 = output.script.slice(6, 10).toLowerCase();
-          if (scriptBP1 === '8d01' || script2 === '8d01') {
-            const legacy = scriptBP1 === '8d01';
+          const scriptBPLegacy = output.script.slice(6, 10).toLowerCase();
+          if (scriptBPLegacy === '8d01' || script2 === '8d01') {
+            const legacy = scriptBPLegacy === '8d01';
             model = DB.Name;
             obj = {
               name: output.script.slice(legacy ? 10 : 8),
@@ -196,8 +196,8 @@ class Worker {
             };
             SHOW_LOGS &&
               console.log(`Blockpress name: ${Buffer.from(obj.name, 'hex')}`);
-          } else if (scriptBP1 === '8d02' || script2 === '8d02') {
-            const legacy = scriptBP1 === '8d01';
+          } else if (scriptBPLegacy === '8d02' || script2 === '8d02') {
+            const legacy = scriptBPLegacy === '8d01';
             model = DB.Message;
             obj = {
               msg: output.script.slice(legacy ? 10 : 8),
@@ -205,7 +205,7 @@ class Worker {
             };
             SHOW_LOGS &&
               console.log(`Blockpress message: ${Buffer.from(obj.msg, 'hex')}`);
-          } else if (scriptBP1 === '8d03' || script2 === '8d03') {
+          } else if (scriptBPLegacy === '8d03' || script2 === '8d03') {
             model = DB.Message;
             obj = {
               msg: output.script.slice(10 + 32 * 2),
@@ -222,7 +222,7 @@ class Worker {
                   'hex'
                 )}`
               );
-          } else if (scriptBP1 === '8d04' || script2 === '8d04') {
+          } else if (scriptBPLegacy === '8d04' || script2 === '8d04') {
             model = DB.Like;
             obj = {
               liketx: output.script.slice(10, 10 + 32 * 2),
@@ -238,7 +238,7 @@ class Worker {
             };
             SHOW_LOGS &&
               console.log(`Blockpress liked: ${obj.liketx}, tip: ${obj.tip}`);
-          } else if (scriptBP1 === '8d06' || script2 === '8d06') {
+          } else if (scriptBPLegacy === '8d06' || script2 === '8d06') {
             model = DB.Follow;
             obj = {
               follow: new Buffer(output.script.slice(10), 'hex').toString(),
@@ -246,7 +246,7 @@ class Worker {
               protocol: 'blockpress',
             };
             SHOW_LOGS && console.log(`Blockpress follow: ${obj.follow}`);
-          } else if (scriptBP1 === '8d07' || script2 === '8d07') {
+          } else if (scriptBPLegacy === '8d07' || script2 === '8d07') {
             model = DB.Follow;
             obj = {
               follow: new Buffer(output.script.slice(10), 'hex').toString(),
@@ -254,26 +254,22 @@ class Worker {
               protocol: 'blockpress',
             };
             SHOW_LOGS && console.log(`Blockpress unfollow: ${obj.follow}`);
-          } else if (scriptBP1 === '8d08' || script2 === '8d08') {
-            const legacy = scriptBP1 === '8d08';
+          } else if (scriptBPLegacy === '8d08' || script2 === '8d08') {
+            const legacy = scriptBPLegacy === '8d08';
             model = DB.Header;
             obj = {
-              header: output.script.slice(
-                legacy ? 10 : script3 === '4c' ? 12 : 10
-              ),
+              header: output.script.slice(legacy ? 10 : 8),
               protocol: 'blockpress',
             };
             SHOW_LOGS &&
               console.log(
                 `Blockpress header: ${Buffer.from(obj.header, 'hex')}`
               );
-          } else if (scriptBP1 === '8d10' || script2 === '8d10') {
-            const legacy = scriptBP1 === '8d08';
+          } else if (scriptBPLegacy === '8d10' || script2 === '8d10') {
+            const legacy = scriptBPLegacy === '8d08';
             model = DB.Avatar;
             obj = {
-              avatar: output.script.slice(
-                legacy ? 10 : script3 === '4c' ? 12 : 10
-              ),
+              avatar: output.script.slice(legacy ? 10 : 8),
               protocol: 'blockpress',
             };
             SHOW_LOGS &&
