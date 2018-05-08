@@ -45,8 +45,9 @@ POST:
 
 # Notes
 
-As of May 7th 2018 it takes only 5 minutes to fully sync all messages to a sqlite database using a local Bitcoin node.
+- All message fields return back raw hex data so it can be decoded in any format you want (Example: hex to ascii/utf-8)
+- As of May 7th 2018 it takes only 5 minutes to fully sync all messages to a sqlite database using a local Bitcoin node.
 
-# Tip jar
+### Tip jar
 
 bitcoincash:qq6zhhvc8wy90a306d8py4eqd49rcu58qvr04xee5y
