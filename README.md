@@ -1,10 +1,12 @@
 # Cashmunity
 
-Lightweight backend that scans Bitcoin Cash blocks for specific protocol transactions and normalizes them.
+A Bitcoin Cash Community.
+
+This lightweight backend scans and normalizes the Bitcoin Cash blockchain for specific protocol transactions and provides easy query endpoints.
 
 Protocols currently supported:
-Memo          (as of May 7th 2018)
-Blockpress    (as of May 7th 2018)
+- Memo          (as of May 7th 2018)
+- Blockpress    (as of May 7th 2018)
 
 # Prerequisites
 

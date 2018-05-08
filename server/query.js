@@ -87,7 +87,19 @@ class Query {
       attributes: ['profile'],
       order: [['height', 'DESC']],
     });
-    return { ...name, ...profile };
+    const avatar = await DB.Avatar.findOne({
+      where: { address },
+      raw: true,
+      attributes: ['avatar'],
+      order: [['height', 'DESC']],
+    });
+    const header = await DB.Header.findOne({
+      where: { address },
+      raw: true,
+      attributes: ['header'],
+      order: [['height', 'DESC']],
+    });
+    return { ...avatar, ...header, ...profile, ...name };
   }
   async allNames({ addresses }) {
     const names = await DB.Name.findAll({
