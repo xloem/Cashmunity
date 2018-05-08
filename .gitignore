@@ -1,5 +1,6 @@
 node_modules
 .DS_Store
-tests/database.db
-config.js
-server/logs
+config.yaml
+/logs
+/db
+/tests

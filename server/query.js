@@ -3,7 +3,7 @@ const Op = DB.Sequelize.Op;
 
 const DEFAULT_LIMIT = 200;
 
-class Memo {
+class Query {
   constructor() {}
 
   async messages({ address, page = 0 }) {
@@ -171,4 +171,4 @@ class Memo {
   }
 }
 
-module.exports = Memo;
+module.exports = Query;
