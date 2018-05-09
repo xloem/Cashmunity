@@ -10,6 +10,8 @@ let CONFIG = {
   BITCOIN_RPC_TIMEOUT: 3000,
 
   DB_DIALECT: 'sqlite',
+
+  DB_DISABLE: false,
 };
 
 try {
