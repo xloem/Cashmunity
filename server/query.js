@@ -1,11 +1,14 @@
 const DB = require('./db');
+const {
+  Models: { Message, Like, Name, Avatar, Header, Profile, Follow },
+} = DB;
 const Op = DB.Sequelize.Op;
 
 const DEFAULT_LIMIT = 200;
 
 class Query {
   async messages({ address, page = 0 }) {
-    const messages = await DB.Message.findAll({
+    const messages = await Message.findAll({
       where: {
         address,
       },
@@ -29,7 +32,7 @@ class Query {
     };
   }
   async replies({ tx, page = 0 }) {
-    const replies = await DB.Message.findAll({
+    const replies = await Message.findAll({
       where: {
         [Op.or]: {
           replytx: tx,
@@ -58,7 +61,7 @@ class Query {
     };
   }
   async likes({ address, page = 0 }) {
-    const likes = await DB.Like.findAll({
+    const likes = await Like.findAll({
       where: {
         address,
       },
@@ -73,7 +76,7 @@ class Query {
     };
   }
   async name({ address }) {
-    const name = await DB.Name.findOne({
+    const name = await Name.findOne({
       where: {
         address,
       },
@@ -81,19 +84,19 @@ class Query {
       attributes: ['name', 'protocol'],
       order: [['height', 'DESC']],
     });
-    const profile = await DB.Profile.findOne({
+    const profile = await Profile.findOne({
       where: { address },
       raw: true,
       attributes: ['profile'],
       order: [['height', 'DESC']],
     });
-    const avatar = await DB.Avatar.findOne({
+    const avatar = await Avatar.findOne({
       where: { address },
       raw: true,
       attributes: ['avatar'],
       order: [['height', 'DESC']],
     });
-    const header = await DB.Header.findOne({
+    const header = await Header.findOne({
       where: { address },
       raw: true,
       attributes: ['header'],
@@ -102,7 +105,7 @@ class Query {
     return { ...avatar, ...header, ...profile, ...name };
   }
   async allNames({ addresses }) {
-    const names = await DB.Name.findAll({
+    const names = await Name.findAll({
       where: {
         address: addresses,
       },
@@ -117,7 +120,7 @@ class Query {
     return returnNames;
   }
   async follows({ address }) {
-    const follows = await DB.Follow.findAll({
+    const follows = await Follow.findAll({
       where: {
         address,
       },
@@ -133,7 +136,7 @@ class Query {
   }
   async feed({ address, page = 0 }) {
     const follows = await this.follows({ address });
-    const messages = await DB.Message.findAll({
+    const messages = await Message.findAll({
       where: {
         address: [address, ...Object.keys(follows)],
       },
@@ -155,7 +158,7 @@ class Query {
     return { messages };
   }
   async top({ page = 0 }) {
-    const messages = await DB.Message.findAll({
+    const messages = await Message.findAll({
       raw: true,
       attributes: [
         'hash',

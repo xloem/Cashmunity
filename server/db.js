@@ -11,14 +11,8 @@ const {
 } = require('./config');
 
 let sequelize;
-let Follow;
-let Like;
-let Message;
-let Name;
-let Profile;
-let Avatar;
-let Header;
 let Settings;
+let Models = {};
 
 if (!DB_DISABLE) {
   if (DB_DIALECT && DB_DIALECT !== 'sqlite') {
@@ -37,32 +31,28 @@ if (!DB_DISABLE) {
   } else {
     sequelize = new Sequelize('sqlite:db/database.db', {
       operatorsAliases: Sequelize.Op,
-      logging: false,
+      // logging: false,
     });
   }
 
   // Models
-  Follow = sequelize.import(__dirname + '/models/follow.js');
-  Like = sequelize.import(__dirname + '/models/like.js');
-  Message = sequelize.import(__dirname + '/models/message.js');
-  Name = sequelize.import(__dirname + '/models/name.js');
-  Profile = sequelize.import(__dirname + '/models/profile.js');
-  Avatar = sequelize.import(__dirname + '/models/avatar.js');
-  Header = sequelize.import(__dirname + '/models/header.js');
+  Models = {
+    Follow: sequelize.import(__dirname + '/models/follow.js'),
+    Like: sequelize.import(__dirname + '/models/like.js'),
+    Message: sequelize.import(__dirname + '/models/message.js'),
+    Name: sequelize.import(__dirname + '/models/name.js'),
+    Profile: sequelize.import(__dirname + '/models/profile.js'),
+    Avatar: sequelize.import(__dirname + '/models/avatar.js'),
+    Header: sequelize.import(__dirname + '/models/header.js'),
+  };
   Settings = sequelize.import(__dirname + '/models/settings.js');
 } else {
   console.log('!!!!!!!! Database is Disabled !!!!!!!!!');
 }
 
 module.exports = {
-  Follow,
-  Like,
-  Name,
-  Profile,
-  Message,
+  Models,
   Settings,
-  Avatar,
-  Header,
   Sequelize,
   sequelize,
 };

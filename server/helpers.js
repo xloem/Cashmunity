@@ -1,4 +1,4 @@
-const DB = require('./db');
+const { Models } = require('./db');
 
 function reverseHexString(str) {
   return str
@@ -13,7 +13,7 @@ async function lookupRootTx(replytx) {
     const tempTxs = {};
     let lookuptx = replytx;
     do {
-      const msg = await DB.Message.findOne({
+      const msg = await Models.Message.findOne({
         where: { hash: lookuptx },
         raw: true,
         attributes: ['hash', 'replytx', 'roottx'],

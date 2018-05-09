@@ -159,10 +159,10 @@ class Worker {
   async clearMempool() {
     if (!DB_DISABLE) {
       await this.connect();
-      await DB.Name.destroy({ where: { height: MAX_BLOCK_HEIGHT } });
-      await DB.Like.destroy({ where: { height: MAX_BLOCK_HEIGHT } });
-      await DB.Message.destroy({ where: { height: MAX_BLOCK_HEIGHT } });
-      await DB.Follow.destroy({ where: { height: MAX_BLOCK_HEIGHT } });
+      const Models = Object.values(DB.Models);
+      for (const model of Models) {
+        await model.destroy({ where: { height: MAX_BLOCK_HEIGHT } });
+      }
       console.log('!!!!!!!!!!!!!!! Cleared mempool txs !!!!!!!!!!!!!!!');
     }
     this.txids = new Set();

@@ -1,4 +1,4 @@
-const DB = require('../db');
+const { Models } = require('../db');
 const { lookupRootTx } = require('../helpers');
 const { DB_DISABLE } = require('../config');
 const SHOW_LOGS = true;
@@ -15,7 +15,7 @@ async function parseTx(tx, output) {
       const scriptBPLegacy = output.script.slice(6, 10);
       if (scriptBPLegacy === '8d01' || script2 === '8d01') {
         const legacy = scriptBPLegacy === '8d01';
-        model = DB.Name;
+        model = Models.Name;
         obj = {
           name: output.script.slice(legacy ? 10 : 8),
           protocol: 'blockpress',
@@ -24,7 +24,7 @@ async function parseTx(tx, output) {
           console.log(`Blockpress name: ${Buffer.from(obj.name, 'hex')}`);
       } else if (scriptBPLegacy === '8d02' || script2 === '8d02') {
         const legacy = scriptBPLegacy === '8d01';
-        model = DB.Message;
+        model = Models.Message;
         obj = {
           msg: output.script.slice(legacy ? 10 : 8),
           protocol: 'blockpress',
@@ -32,7 +32,7 @@ async function parseTx(tx, output) {
         SHOW_LOGS &&
           console.log(`Blockpress message: ${Buffer.from(obj.msg, 'hex')}`);
       } else if (scriptBPLegacy === '8d03' || script2 === '8d03') {
-        model = DB.Message;
+        model = Models.Message;
         obj = {
           msg: output.script.slice(10 + 32 * 2),
           replytx: output.script.slice(10, 10 + 32 * 2),
@@ -48,7 +48,7 @@ async function parseTx(tx, output) {
             `Blockpress reply: ${obj.replytx}, ${Buffer.from(obj.msg, 'hex')}`
           );
       } else if (scriptBPLegacy === '8d04' || script2 === '8d04') {
-        model = DB.Like;
+        model = Models.Like;
         obj = {
           liketx: output.script.slice(10, 10 + 32 * 2),
           tip: tx.outputs.reduce((previous, out) => {
@@ -64,7 +64,7 @@ async function parseTx(tx, output) {
         SHOW_LOGS &&
           console.log(`Blockpress liked: ${obj.liketx}, tip: ${obj.tip}`);
       } else if (scriptBPLegacy === '8d06' || script2 === '8d06') {
-        model = DB.Follow;
+        model = Models.Follow;
         obj = {
           follow: new Buffer(output.script.slice(10), 'hex').toString(),
           unfollow: false,
@@ -72,7 +72,7 @@ async function parseTx(tx, output) {
         };
         SHOW_LOGS && console.log(`Blockpress follow: ${obj.follow}`);
       } else if (scriptBPLegacy === '8d07' || script2 === '8d07') {
-        model = DB.Follow;
+        model = Models.Follow;
         obj = {
           follow: new Buffer(output.script.slice(10), 'hex').toString(),
           unfollow: true,
@@ -81,7 +81,7 @@ async function parseTx(tx, output) {
         SHOW_LOGS && console.log(`Blockpress unfollow: ${obj.follow}`);
       } else if (scriptBPLegacy === '8d08' || script2 === '8d08') {
         const legacy = scriptBPLegacy === '8d08';
-        model = DB.Header;
+        model = Models.Header;
         obj = {
           header: output.script.slice(legacy ? 10 : 8),
           protocol: 'blockpress',
@@ -90,7 +90,7 @@ async function parseTx(tx, output) {
           console.log(`Blockpress header: ${Buffer.from(obj.header, 'hex')}`);
       } else if (scriptBPLegacy === '8d10' || script2 === '8d10') {
         const legacy = scriptBPLegacy === '8d08';
-        model = DB.Avatar;
+        model = Models.Avatar;
         obj = {
           avatar: output.script.slice(legacy ? 10 : 8),
           protocol: 'blockpress',
@@ -99,7 +99,7 @@ async function parseTx(tx, output) {
           console.log(`Blockpress avatar: ${Buffer.from(obj.avatar, 'hex')}`);
       } else if (script2 === '8d11') {
         const topicLength = parseInt(output.script.slice(8, 10), 16);
-        model = DB.Message;
+        model = Models.Message;
         obj = {
           topic: output.script.slice(10, 10 + topicLength * 2),
           msg: output.script.slice(10 + topicLength * 2),
