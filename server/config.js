@@ -18,7 +18,10 @@ try {
   CONFIG = yaml.safeLoad(
     fs.readFileSync(path.join(__dirname, '../config.yaml'), 'utf8')
   );
-  console.log('Using config.yaml', CONFIG);
+  console.log('Using config.yaml', {
+    ...CONFIG,
+    BITCOIN_RPC_PASSWORD: '************',
+  });
 } catch (e) {
   console.log(e);
 }

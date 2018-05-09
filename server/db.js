@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 const {
+  DB_DISABLE,
   DB_DIALECT,
   DB_DATABASE,
   DB_USER,
@@ -10,35 +11,48 @@ const {
 } = require('./config');
 
 let sequelize;
-if (DB_DIALECT && DB_DIALECT !== 'sqlite') {
-  sequelize = new Sequelize(DB_DATABASE, DB_USER, DB_PASSWORD, {
-    dialect: DB_DIALECT,
-    protocol: DB_PROTOCOL,
-    port: DB_PORT,
-    host: DB_HOST,
-    // logging:  false,
-    // pool: {
-    //   max: 5,
-    //   min: 0,
-    //   idle: 10000,
-    // },
-  });
-} else {
-  sequelize = new Sequelize('sqlite:db/database.db', {
-    operatorsAliases: Sequelize.Op,
-    logging: false,
-  });
-}
+let Follow;
+let Like;
+let Message;
+let Name;
+let Profile;
+let Avatar;
+let Header;
+let Settings;
 
-// Models
-const Follow = sequelize.import(__dirname + '/models/follow.js');
-const Like = sequelize.import(__dirname + '/models/like.js');
-const Message = sequelize.import(__dirname + '/models/message.js');
-const Name = sequelize.import(__dirname + '/models/name.js');
-const Profile = sequelize.import(__dirname + '/models/profile.js');
-const Avatar = sequelize.import(__dirname + '/models/avatar.js');
-const Header = sequelize.import(__dirname + '/models/header.js');
-const Settings = sequelize.import(__dirname + '/models/settings.js');
+if (!DB_DISABLE) {
+  if (DB_DIALECT && DB_DIALECT !== 'sqlite') {
+    sequelize = new Sequelize(DB_DATABASE, DB_USER, DB_PASSWORD, {
+      dialect: DB_DIALECT,
+      protocol: DB_PROTOCOL,
+      port: DB_PORT,
+      host: DB_HOST,
+      // logging:  false,
+      // pool: {
+      //   max: 5,
+      //   min: 0,
+      //   idle: 10000,
+      // },
+    });
+  } else {
+    sequelize = new Sequelize('sqlite:db/database.db', {
+      operatorsAliases: Sequelize.Op,
+      logging: false,
+    });
+  }
+
+  // Models
+  Follow = sequelize.import(__dirname + '/models/follow.js');
+  Like = sequelize.import(__dirname + '/models/like.js');
+  Message = sequelize.import(__dirname + '/models/message.js');
+  Name = sequelize.import(__dirname + '/models/name.js');
+  Profile = sequelize.import(__dirname + '/models/profile.js');
+  Avatar = sequelize.import(__dirname + '/models/avatar.js');
+  Header = sequelize.import(__dirname + '/models/header.js');
+  Settings = sequelize.import(__dirname + '/models/settings.js');
+} else {
+  console.log('!!!!!!!! Database is Disabled !!!!!!!!!');
+}
 
 module.exports = {
   Follow,

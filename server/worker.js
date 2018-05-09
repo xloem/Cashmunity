@@ -24,19 +24,19 @@ class Worker {
 
   async connect() {
     if (this.connected) return;
-    console.log('Loading database...');
-    await DB.sequelize.sync({
-      // force: true, // WARNING! WIll drop tables
-    });
     if (!DB_DISABLE) {
+      console.log('Loading database...');
+      await DB.sequelize.sync({
+        // force: true, // WARNING! Will drop tables
+      });
       const temp = await DB.Settings.findOrCreate({
         where: { name: 'sync' },
         defaults: { height: START_BLOCK - 1 },
       });
-      this.Sync = temp[0];
+      this.SyncObj = temp[0];
+      console.log('Database loaded');
     }
     this.connected = true;
-    console.log('Database loaded');
   }
 
   async start() {
@@ -47,26 +47,16 @@ class Worker {
       BITCOIN_RPC_PORT,
       BITCOIN_RPC_TIMEOUT
     );
-
     await this.autoSyncBlocks();
     await this.clearMempool();
     await this.autoSyncMempool();
     this.checkFullySynced();
   }
 
-  async autoSyncBlocks() {
-    clearTimeout(this.tautoSyncBlocks);
-    await this.sync();
-    this.tautoSyncBlocks = setTimeout(() => {
-      this.autoSyncBlocks();
-    }, 1000);
-  }
-
   async checkSyncStatus() {
     await this.connect();
     const endBlock = await this.bcc.getBlockCount();
-    const startBlock = !DB_DISABLE ? this.Sync.get().height : START_BLOCK;
-
+    const startBlock = !DB_DISABLE ? this.SyncObj.get().height : START_BLOCK;
     return { startBlock, endBlock };
   }
   async checkFullySynced() {
@@ -104,18 +94,22 @@ class Worker {
     });
   }
 
-  async sync() {
+  async autoSyncBlocks() {
+    clearTimeout(this.tautoSyncBlocks);
+    await this.syncBlocks();
+    this.tautoSyncBlocks = setTimeout(() => {
+      this.autoSyncBlocks();
+    }, 1000);
+  }
+  async syncBlocks() {
     if (this.syncing) return;
     this.syncing = true;
-
     try {
       const { endBlock, startBlock } = await this.checkSyncStatus();
       if (startBlock < endBlock) {
         console.log('Syncing Memos...', startBlock, endBlock);
       }
-
-      let height;
-      for (height = startBlock + 1; height <= endBlock; height++) {
+      for (let height = startBlock + 1; height <= endBlock; height++) {
         console.log('Syncing block', height);
         try {
           const blockHash = await this.bcc.getBlockHash(height);
@@ -126,7 +120,7 @@ class Worker {
           block.txs.map(async tx => {
             await this.processTx(tx, height, true);
           });
-          if (!DB_DISABLE) await this.Sync.update({ height });
+          if (!DB_DISABLE) await this.SyncObj.update({ height });
           this.checkFullySynced();
         } catch (err) {
           console.log('ERROR', err);
@@ -140,26 +134,11 @@ class Worker {
     this.syncing = false;
   }
 
-  async clearMempool() {
-    if (!DB_DISABLE) {
-      await this.connect();
-      await DB.Name.destroy({ where: { height: MAX_BLOCK_HEIGHT } });
-      await DB.Like.destroy({ where: { height: MAX_BLOCK_HEIGHT } });
-      await DB.Message.destroy({ where: { height: MAX_BLOCK_HEIGHT } });
-      await DB.Follow.destroy({ where: { height: MAX_BLOCK_HEIGHT } });
-      console.log('!!!!!!!!!!!!!!! Cleared mempool txs !!!!!!!!!!!!!!!');
-    }
-    this.txids = new Set();
-  }
-
   async autoSyncMempool() {
     clearTimeout(this.tautoSyncMempool);
     await this.syncMempool();
-    this.tautoSyncMempool = setTimeout(() => {
-      this.autoSyncMempool();
-    }, 1000);
+    this.tautoSyncMempool = setTimeout(() => this.autoSyncMempool(), 1000);
   }
-
   async syncMempool() {
     try {
       await this.connect();
@@ -176,6 +155,17 @@ class Worker {
       console.log('ERROR', err);
       if (THROW_ERRORS) throw err;
     }
+  }
+  async clearMempool() {
+    if (!DB_DISABLE) {
+      await this.connect();
+      await DB.Name.destroy({ where: { height: MAX_BLOCK_HEIGHT } });
+      await DB.Like.destroy({ where: { height: MAX_BLOCK_HEIGHT } });
+      await DB.Message.destroy({ where: { height: MAX_BLOCK_HEIGHT } });
+      await DB.Follow.destroy({ where: { height: MAX_BLOCK_HEIGHT } });
+      console.log('!!!!!!!!!!!!!!! Cleared mempool txs !!!!!!!!!!!!!!!');
+    }
+    this.txids = new Set();
   }
 
   async boadcastTransaction({ tx }) {
