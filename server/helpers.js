@@ -29,18 +29,15 @@ async function lookupRootTx(replytx) {
         } else if (msg.hash) {
           roottx = msg.hash;
         } else {
-          throw new Error('Sould not happen');
+          throw new Error('Should not happen');
         }
         tempTxs[msg.hash] = true;
       } else {
-        console.log(
-          '*************************** COULD NOT FIND TX ***************************'
-        );
+        console.log('************** COULD NOT FIND ROOT TX **************');
       }
     } while (lookuptx);
   } catch (err) {
     console.log('ERROR roottx lookup', err);
-    // if (THROW_ERRORS) throw err;
   }
   return roottx;
 }
