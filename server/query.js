@@ -25,7 +25,7 @@ class Query {
       ],
       limit: DEFAULT_LIMIT,
       offset: DEFAULT_LIMIT * page,
-      order: [['height', 'DESC']],
+      order: [['height', 'DESC'], ['mtime', 'DESC']],
     });
     return {
       messages,
@@ -54,7 +54,7 @@ class Query {
       ],
       limit: DEFAULT_LIMIT,
       offset: DEFAULT_LIMIT * page,
-      order: [['height', 'DESC']],
+      order: [['height', 'DESC'], ['mtime', 'DESC']],
     });
     return {
       replies,
@@ -69,7 +69,7 @@ class Query {
       attributes: ['hash', 'liketx', 'tip', 'height', 'mtime', 'protocol'],
       limit: DEFAULT_LIMIT,
       offset: DEFAULT_LIMIT * page,
-      order: [['height', 'DESC']],
+      order: [['height', 'DESC'], ['mtime', 'DESC']],
     });
     return {
       likes,
@@ -82,25 +82,25 @@ class Query {
       },
       raw: true,
       attributes: ['name', 'protocol'],
-      order: [['height', 'DESC']],
+      order: [['height', 'DESC'], ['mtime', 'DESC']],
     });
     const profile = await Profile.findOne({
       where: { address },
       raw: true,
       attributes: ['profile'],
-      order: [['height', 'DESC']],
+      order: [['height', 'DESC'], ['mtime', 'DESC']],
     });
     const avatar = await Avatar.findOne({
       where: { address },
       raw: true,
       attributes: ['avatar'],
-      order: [['height', 'DESC']],
+      order: [['height', 'DESC'], ['mtime', 'DESC']],
     });
     const header = await Header.findOne({
       where: { address },
       raw: true,
       attributes: ['header'],
-      order: [['height', 'DESC']],
+      order: [['height', 'DESC'], ['mtime', 'DESC']],
     });
     return { ...avatar, ...header, ...profile, ...name };
   }
@@ -111,12 +111,12 @@ class Query {
       },
       raw: true,
       attributes: ['name', 'address', 'protocol'],
-      order: [['height', 'ASC']],
+      order: [['height', 'ASC'], ['mtime', 'ASC']],
     });
     const returnNames = {};
-    names.map(name => {
+    for (const name of names) {
       returnNames[name.address] = name.name;
-    });
+    }
     return returnNames;
   }
   async follows({ address }) {
@@ -126,12 +126,12 @@ class Query {
       },
       raw: true,
       attributes: ['follow', 'unfollow', 'protocol'],
-      order: [['height', 'ASC']],
+      order: [['height', 'DESC'], ['mtime', 'DESC']],
     });
     const followMap = {};
-    follows.map(follow => {
+    for (const follow of follows) {
       followMap[follow.follow] = follow.unfollow ? undefined : true;
-    });
+    }
     return followMap;
   }
   async feed({ address, page = 0 }) {
@@ -153,7 +153,7 @@ class Query {
       ],
       limit: DEFAULT_LIMIT,
       offset: DEFAULT_LIMIT * page,
-      order: [['height', 'DESC']],
+      order: [['height', 'DESC'], ['mtime', 'DESC']],
     });
     return { messages };
   }
@@ -173,7 +173,7 @@ class Query {
       ],
       limit: DEFAULT_LIMIT,
       offset: DEFAULT_LIMIT * page,
-      order: [['height', 'DESC']],
+      order: [['height', 'DESC'], ['mtime', 'DESC']],
     });
     const temp = {};
     messages.map(message => {
