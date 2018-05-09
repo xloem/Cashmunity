@@ -3,12 +3,12 @@ module.exports = function(sequelize, DataTypes) {
     'Like',
     {
       hash: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(64),
         unique: true,
         primaryKey: true,
       },
-      address: DataTypes.STRING,
-      liketx: DataTypes.STRING,
+      address: DataTypes.STRING(35),
+      liketx: DataTypes.STRING(64),
       tip: DataTypes.BIGINT,
       height: DataTypes.BIGINT,
       mtime: DataTypes.BIGINT,

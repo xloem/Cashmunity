@@ -3,12 +3,12 @@ module.exports = function(sequelize, DataTypes) {
     'Follow',
     {
       hash: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(64),
         unique: true,
         primaryKey: true,
       },
-      address: DataTypes.STRING,
-      follow: DataTypes.STRING,
+      address: DataTypes.STRING(35),
+      follow: DataTypes.STRING(64),
       height: DataTypes.BIGINT,
       mtime: DataTypes.BIGINT,
       unfollow: DataTypes.BOOLEAN,

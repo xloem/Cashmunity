@@ -3,12 +3,12 @@ module.exports = function(sequelize, DataTypes) {
     'Name',
     {
       hash: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(64),
         unique: true,
         primaryKey: true,
       },
-      address: DataTypes.STRING,
-      name: DataTypes.STRING,
+      address: DataTypes.STRING(35),
+      name: DataTypes.STRING(440),
       height: DataTypes.BIGINT,
       mtime: DataTypes.BIGINT,
       protocol: DataTypes.ENUM('memo', 'blockpress'),

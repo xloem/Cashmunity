@@ -112,6 +112,28 @@ async function parseTx(tx, output) {
               'hex'
             )}`
           );
+      } else if (script2 === '8d09') {
+        // v1.2: Create Media Post
+        const TYPES = {
+          '00': 'reserved',
+          '01': 'img',
+        };
+        const type = output.script.slice(10, 12);
+        const mediaLength = parseInt(output.script.slice(12, 14), 16);
+        model = Models.Message;
+        obj = {
+          media: output.script.slice(14, 14 + mediaLength * 2),
+          type: TYPES[type] || 'unknown',
+          msg: output.script.slice(14 + mediaLength * 2),
+          protocol: 'blockpress',
+        };
+        SHOW_LOGS &&
+          console.log(
+            `Blockpress media ${obj.type}, ${Buffer.from(
+              obj.media,
+              'hex'
+            )}: ${Buffer.from(obj.msg, 'hex')}`
+          );
       }
     }
   } catch (err) {

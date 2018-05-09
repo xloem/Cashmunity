@@ -5,8 +5,8 @@ A Bitcoin Cash Community.
 This lightweight backend scans and normalizes the Bitcoin Cash blockchain for specific protocol transactions and provides easy query endpoints.
 
 Protocols currently supported:
-- Memo          (as of May 6th 2018 https://memo.cash/protocol)
-- Blockpress    (v1.1 as of May 6th 2018 https://www.blockpress.com/developers/blockpress-protocol)
+- Memo          (as of May 9th 2018 https://memo.cash/protocol)
+- Blockpress    (v1.2 as of May 9th 2018 https://www.blockpress.com/developers/blockpress-protocol)
 
 
 
@@ -48,8 +48,8 @@ POST:
 
 # Notes
 
-- All message fields return back raw hex data so it can be decoded in any format you want (Example: hex to ascii/utf-8)
-- As of May 7th 2018 it takes only 5 minutes to fully sync all messages to a sqlite database using a local Bitcoin node.
+- All message fields return back raw hex data so it can be decoded in any format you want (Example: hex to ascii/utf8)
+- As of May 9th 2018 (block # 529529) it takes about 7 minutes to fully sync all messages to a sqlite database using a local Bitcoin node.
 
 ### Tip jar
 
