@@ -25,7 +25,7 @@ app.get('/messages/:address', async (req, res) => {
   LOG && console.log('/messages', req.params);
   res.json(await query.messages({ ...req.params, page: req.query.page }));
 });
-app.get('/replies/:replytx', async (req, res) => {
+app.get('/replies/:txid', async (req, res) => {
   LOG && console.log('/replies', req.params);
   res.json(await query.replies({ ...req.params, page: req.query.page }));
 });
@@ -45,9 +45,9 @@ app.get('/feed/:address', async (req, res) => {
   LOG && console.log('/feed', req.params);
   res.json(await query.feed({ ...req.params, page: req.query.page }));
 });
-app.get('/top', async (req, res) => {
-  LOG && console.log('/top', req.query);
-  res.json(await query.top({ page: req.query.page }));
+app.get('/all', async (req, res) => {
+  LOG && console.log('/all', req.query);
+  res.json(await query.all({ page: req.query.page }));
 });
 app.post('/post', async (req, res) => {
   LOG && console.log('/post', req.body);

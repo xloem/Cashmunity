@@ -27,7 +27,7 @@ cp config.example.yaml config.yaml
 npm start
 
 # Wait until fully synced
-# Visit http://localhost:8081/top
+# Visit http://localhost:8081/all
 ```
 
 # Endpoints
@@ -35,12 +35,12 @@ npm start
 ```
 GET:
 /messages/:address
-/replies/:replytx
+/replies/:txid
 /likes/:address
 /name/:address
 /follows/:address
 /feed/:address
-/top
+/all
 
 POST:
 /post    { tx: 'hexstring' }

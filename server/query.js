@@ -31,13 +31,13 @@ class Query {
       messages,
     };
   }
-  async replies({ tx, page = 0 }) {
+  async replies({ txid, page = 0 }) {
     const replies = await Message.findAll({
       where: {
         [Op.or]: {
-          replytx: tx,
-          roottx: tx,
-          hash: tx,
+          replytx: txid,
+          roottx: txid,
+          hash: txid,
         },
       },
       raw: true,
@@ -157,7 +157,7 @@ class Query {
     });
     return { messages };
   }
-  async top({ page = 0 }) {
+  async all({ page = 0 }) {
     const messages = await Message.findAll({
       raw: true,
       attributes: [

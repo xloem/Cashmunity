@@ -31,7 +31,7 @@ if (!DB_DISABLE) {
   } else {
     sequelize = new Sequelize('sqlite:db/database.db', {
       operatorsAliases: Sequelize.Op,
-      // logging: false,
+      logging: false,
     });
   }
 
