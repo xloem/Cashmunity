@@ -5,8 +5,11 @@ A Bitcoin Cash Community.
 This lightweight backend scans and normalizes the Bitcoin Cash blockchain for specific protocol transactions and provides easy query endpoints.
 
 Protocols currently supported:
-- Memo          (as of May 7th 2018)
-- Blockpress    (as of May 7th 2018)
+- Memo          (as of May 6th 2018 https://memo.cash/protocol)
+- Blockpress    (v1.1 as of May 6th 2018 https://www.blockpress.com/developers/blockpress-protocol)
+
+
+
 
 # Prerequisites
 
